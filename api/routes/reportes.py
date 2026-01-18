@@ -18,10 +18,10 @@ from fastapi.responses import JSONResponse
 from datetime import datetime, date
 from decimal import Decimal
 
-from backend.api.dependencies import get_reportes_service
-from backend.api.schemas.reportes import ReportesFiltros
-from backend.services.reportes.service import ReportesService
-from backend.services.reportes.utils.json import limpiar_json
+from api.dependencies import get_reportes_service
+from api.schemas.reportes import ReportesFiltros
+from services.reportes.service import ReportesService
+from services.reportes.utils.json import limpiar_json
 
 
 router = APIRouter(tags=["Reportes"])

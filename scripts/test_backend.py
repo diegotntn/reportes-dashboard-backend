@@ -15,11 +15,11 @@ NO:
 import random
 from datetime import date, timedelta
 
-from backend.db.factory import get_db
-from backend.db.mongo.repos.devoluciones_repo import DevolucionesRepo
-from backend.db.mongo.reportes.queries import ReportesQueries
-from backend.services.personal_service import PersonalService
-from backend.services.reportes.service import ReportesService
+from db.factory import get_db
+from db.mongo.repos.devoluciones_repo import DevolucionesRepo
+from db.mongo.reportes.queries import ReportesQueries
+from services.personal_service import PersonalService
+from services.reportes.service import ReportesService
 
 
 # ─────────────────────────────────────────────

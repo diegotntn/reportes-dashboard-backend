@@ -1,49 +1,49 @@
 import pandas as pd
 
-from backend.db.mongo.reportes.filtros import (
+from db.mongo.reportes.filtros import (
     rango_fechas,
     combinar_filtros,
 )
 
 # ─── DATA ─────────────────────────────────────────────
-from backend.services.reportes.data.queries import (
+from services.reportes.data.queries import (
     cargar_devoluciones_detalle,
 )
 
-from backend.services.reportes.data.dataframe import (
+from services.reportes.data.dataframe import (
     obtener_dataframe,
 )
 
 # ─── NORMALIZATION ────────────────────────────────────
-from backend.services.reportes.normalization import (
+from services.reportes.normalization import (
     normalizar_ids,
     normalizar_columnas,
     normalizar_tipos,
 )
 
 # ─── AGGREGATIONS ─────────────────────────────────────
-from backend.services.reportes.aggregations import (
+from services.reportes.aggregations import (
     agrupa_por_zona,
     agrupa_por_pasillo,
     tabla_final,
 )
 
 # ─── GENERAL ──────────────────────────────────────────
-from backend.services.reportes.aggregations.general import (
+from services.reportes.aggregations.general import (
     agrupa_general,
 )
 
 # ─── PERSONAS ─────────────────────────────────────────
-from backend.services.reportes.personas import (
+from services.reportes.personas import (
     agrupar_por_persona,          # TABLA / RESUMEN
 )
 
-from backend.services.reportes.personas.agrupacion import (
+from services.reportes.personas.agrupacion import (
     agrupar_personas_por_fecha,   # 📈 SERIES
 )
 
 # ─── TEMPORAL ─────────────────────────────────────────
-from backend.services.reportes.temporal import (
+from services.reportes.temporal import (
     map_periodo,
     serie_por_dia,
     serie_por_semana,

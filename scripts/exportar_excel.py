@@ -1,5 +1,5 @@
 import pandas as pd
-from backend.scripts.utils.formato import money
+from scripts.utils.formato import money
 
 
 def exportar_excel(resultado: dict, path: str):

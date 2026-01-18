@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from backend.api.routes import reportes
+from api.routes import reportes
 
 
 def create_app() -> FastAPI:

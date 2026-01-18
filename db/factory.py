@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-from backend.db.mongo.client import MongoClientProvider
+from db.mongo.client import MongoClientProvider
 
 
 # ─────────────────────────────────────────────

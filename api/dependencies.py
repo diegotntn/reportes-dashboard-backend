@@ -20,8 +20,8 @@ MongoClientProvider → ReportesQueries → ReportesService
 # ─────────────────────────────────────────
 # DB PROVIDER (SOLO LECTURA)
 # ─────────────────────────────────────────
-from backend.db.factory import get_db
-from backend.db.mongo.client import MongoClientProvider
+from db.factory import get_db
+from db.mongo.client import MongoClientProvider
 
 
 def get_database() -> MongoClientProvider:
@@ -37,7 +37,7 @@ def get_database() -> MongoClientProvider:
 # ─────────────────────────────────────────
 # QUERIES ANALÍTICAS
 # ─────────────────────────────────────────
-from backend.db.mongo.reportes.queries import ReportesQueries
+from db.mongo.reportes.queries import ReportesQueries
 
 
 def get_reportes_queries() -> ReportesQueries:
@@ -61,7 +61,7 @@ def get_reportes_queries() -> ReportesQueries:
 # ─────────────────────────────────────────
 # SERVICE (ORQUESTADOR)
 # ─────────────────────────────────────────
-from backend.services.reportes.service import ReportesService
+from services.reportes.service import ReportesService
 
 
 def get_reportes_service() -> ReportesService:

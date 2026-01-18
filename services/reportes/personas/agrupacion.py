@@ -2,7 +2,7 @@ import pandas as pd
 from typing import Dict, Any, Optional, List
 from datetime import date, datetime
 
-from backend.services.reportes.aggregations.tabla import tabla_final
+from services.reportes.aggregations.tabla import tabla_final
 
 
 # ─────────────────────────────
