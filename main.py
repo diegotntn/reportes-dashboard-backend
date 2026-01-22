@@ -1,22 +1,38 @@
 """
-Punto de entrada del backend ReporteSurtido (PRODUCCIÓN).
+Punto de entrada del backend ReporteSurtido.
 
 RESPONSABILIDADES:
 - Crear la aplicación FastAPI
 - Configurar middlewares (CORS)
 - Registrar rutas de la API (solo reportes)
 - Exponer la app para Render / Uvicorn
-
-NOTA:
-- Este archivo NO se usa en desarrollo local
-- Es exclusivo para despliegue remoto
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
 
-from api.routes import reportes   # 🔑 SIN 'backend.' en producción
+from api.routes import reportes
+
+
+# ─────────────────────────────────────────
+# 🔁 BANDERA DE ENTORNO
+# ─────────────────────────────────────────
+MODE = 1  # 0 = LOCALHOST | 1 = RENDER
+
+
+# ─────────────────────────────────────────
+# CONFIGURACIÓN SEGÚN MODO
+# ─────────────────────────────────────────
+if MODE == 0:
+    ALLOW_ORIGINS = [
+        "http://localhost",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+else:
+    ALLOW_ORIGINS = [
+        "https://diegotntn.github.io",
+    ]
 
 
 # ─────────────────────────────────────────
@@ -30,13 +46,11 @@ def create_app() -> FastAPI:
     )
 
     # ─────────────────────────────────────────
-    # CORS (FRONTEND REMOTO)
+    # CORS
     # ─────────────────────────────────────────
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "https://diegotntn.github.io",   # GitHub Pages
-        ],
+        allow_origins=ALLOW_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -52,16 +66,19 @@ def create_app() -> FastAPI:
     )
 
     # ─────────────────────────────────────────
-    # HEALTH CHECK (Render)
+    # HEALTH CHECK
     # ─────────────────────────────────────────
     @app.get("/api/health", tags=["Health"])
     def health_check():
-        return {"status": "ok"}
+        return {
+            "status": "ok",
+            "mode": "local" if MODE == 0 else "render"
+        }
 
     return app
 
 
 # ─────────────────────────────────────────
-# APP EXPORTADA (Render la usa)
+# APP EXPORTADA
 # ─────────────────────────────────────────
 app = create_app()
