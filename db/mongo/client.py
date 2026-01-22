@@ -16,40 +16,23 @@ class MongoClientProvider:
     """
 
     # ─────────────────────────────
-    # 🔹 INIT
+    # INIT
     # ─────────────────────────────
     def __init__(self, uri: str, db_name: str):
-        print("\n🔌 [MongoClientProvider] Conectando a MongoDB...")
-        print("   URI:", uri)
-        print("   DB :", db_name)
-
         self._client = MongoClient(uri)
         self._db = self._client[db_name]
 
-        print("✅ [MongoClientProvider] Conexión creada")
-        print("📦 [MongoClientProvider] Colecciones disponibles:")
-        try:
-            for c in self._db.list_collection_names():
-                print("   -", c)
-        except Exception as e:
-            print("❌ Error listando colecciones:", e)
-
     # ─────────────────────────────
-    # 🔹 ACCESO GENÉRICO
+    # ACCESO GENÉRICO
     # ─────────────────────────────
     def get_collection(self, name: str):
         """
         Devuelve una colección Mongo (uso interno por services / queries).
         """
-        print(f"\n📁 [MongoClientProvider] get_collection('{name}')")
-
-        if name not in self._db.list_collection_names():
-            print(f"⚠️  Colección '{name}' NO existe en la base")
-
         return self._db[name]
 
     # ─────────────────────────────
-    # 🔹 DEVOLUCIONES (LECTURA)
+    # DEVOLUCIONES (LECTURA)
     # ─────────────────────────────
     def find_devoluciones(
         self,
@@ -63,9 +46,6 @@ class MongoClientProvider:
         """
         Consulta devoluciones mediante Mongo.find().
         """
-
-        print("\n🧪 [MongoClientProvider] find_devoluciones")
-
         query: Dict[str, Any] = {}
 
         if isinstance(filtro, dict):
@@ -84,102 +64,54 @@ class MongoClientProvider:
         if estatus:
             query["estatus"] = estatus
 
-        print("➡️  Query final:", query)
-
         try:
-            total_docs = self._db.devoluciones.count_documents({})
-            match_docs = self._db.devoluciones.count_documents(query)
-
-            print("📦 Total devoluciones:", total_docs)
-            print("🎯 Coinciden con query:", match_docs)
-
-            sample = list(self._db.devoluciones.find(query).limit(1))
-            if sample:
-                print("📄 Sample documento:")
-                print(sample[0])
-                print("📅 Tipo de fecha:", type(sample[0].get("fecha")))
-            else:
-                print("⚠️  Query no devolvió documentos")
-
             return list(self._db.devoluciones.find(query))
-
-        except Exception as e:
-            print("❌ ERROR en find_devoluciones:", e)
+        except Exception:
             return []
 
     # ─────────────────────────────
-    # 🔹 AGGREGATE DEVOLUCIONES
+    # AGGREGATE DEVOLUCIONES
     # ─────────────────────────────
     def aggregate_devoluciones(self, pipeline: List[Dict]) -> List[Dict]:
         """
         Ejecuta un aggregate sobre la colección devoluciones.
         """
-
-        print("\n🧪 [MongoClientProvider] aggregate_devoluciones")
-        print("📐 Pipeline recibido:")
-        for i, stage in enumerate(pipeline):
-            print(f"   {i+1}. {stage}")
-
         try:
-            result = list(self._db.devoluciones.aggregate(pipeline))
-
-            print("🎯 Resultado aggregate:", len(result))
-
-            if result:
-                print("📄 Sample aggregate:")
-                print(result[0])
-            else:
-                print("⚠️  Aggregate devolvió 0 filas")
-
-            return result
-
-        except Exception as e:
-            print("❌ ERROR en aggregate_devoluciones:", e)
+            return list(self._db.devoluciones.aggregate(pipeline))
+        except Exception:
             return []
 
     # ─────────────────────────────
-    # 🔹 DEVOLUCIÓN COMPLETA
+    # DEVOLUCIÓN COMPLETA
     # ─────────────────────────────
     def get_devolucion_completa(self, devolucion_id) -> Dict | None:
-        print("\n🔍 [MongoClientProvider] get_devolucion_completa")
-        print("   ID:", devolucion_id)
-
         try:
-            doc = self._db.devoluciones.find_one({"_id": devolucion_id})
-            print("   Encontrado:", bool(doc))
-            return doc
-        except Exception as e:
-            print("❌ ERROR get_devolucion_completa:", e)
+            return self._db.devoluciones.find_one({"_id": devolucion_id})
+        except Exception:
             return None
 
     # ─────────────────────────────
-    # 🔹 PERSONAL (LECTURA)
+    # PERSONAL (LECTURA)
     # ─────────────────────────────
     def listar_personal(self, solo_activos: bool = True) -> List[Dict]:
-        print("\n👥 [MongoClientProvider] listar_personal")
         query = {"activo": True} if solo_activos else {}
-        print("➡️  Query:", query)
         return list(self._db.personal.find(query))
 
     # ─────────────────────────────
-    # 🔹 ASIGNACIONES (LECTURA)
+    # ASIGNACIONES (LECTURA)
     # ─────────────────────────────
     def listar_asignaciones(self) -> List[Dict]:
-        print("\n📋 [MongoClientProvider] listar_asignaciones")
         return list(self._db.asignaciones.find())
 
     # ─────────────────────────────
-    # 🔹 VENDEDORES (LECTURA)
+    # VENDEDORES (LECTURA)
     # ─────────────────────────────
     def listar_vendedores(self, solo_activos: bool = True) -> List[Dict]:
-        print("\n🧑‍💼 [MongoClientProvider] listar_vendedores")
         query = {"activo": True} if solo_activos else {}
-        print("➡️  Query:", query)
         return list(self._db.vendedores.find(query))
 
     # ─────────────────────────────
-    # 🔹 LIFECYCLE
+    # LIFECYCLE
     # ─────────────────────────────
     def close(self):
-        print("\n🔌 [MongoClientProvider] Cerrando conexión MongoDB")
         self._client.close()
