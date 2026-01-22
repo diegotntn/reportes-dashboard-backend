@@ -4,9 +4,3 @@ __pycache__/
 .env
 venv/
 .env/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
