@@ -50,7 +50,6 @@ def obtener_dataframe(
     """
     Normaliza y ENRIQUECE el DataFrame base para reportes.
     """
-
     if df_detalle is None:
         return None
 
@@ -92,13 +91,5 @@ def obtener_dataframe(
 
     # ───────── Fallback explícito
     df["persona_nombre"] = df["persona_nombre"].fillna("Sin asignación")
-    
-    print(
-        "[DEBUG DATAFRAME GENERAL]",
-        df[["fecha", "pasillo", "persona_id", "persona_nombre"]]
-        .drop_duplicates()
-        .head(20)
-    )
-    
+
     return df
-    
