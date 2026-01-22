@@ -28,10 +28,7 @@ def get_database() -> MongoClientProvider:
     """
     Devuelve el proveedor Mongo en modo SOLO LECTURA.
     """
-    print("\n🔗 [dependencies] get_database()")
-    provider = get_db()
-    print("   ✔ MongoClientProvider listo")
-    return provider
+    return get_db()
 
 
 # ─────────────────────────────────────────
@@ -48,14 +45,8 @@ def get_reportes_queries() -> ReportesQueries:
     - Se inyecta el MongoClientProvider COMPLETO
     - NO se pasa una colección suelta
     """
-    print("\n🧩 [dependencies] get_reportes_queries()")
-
     provider = get_database()
-
-    queries = ReportesQueries(provider)
-
-    print("   ✔ ReportesQueries creado correctamente")
-    return queries
+    return ReportesQueries(provider)
 
 
 # ─────────────────────────────────────────
@@ -71,11 +62,5 @@ def get_reportes_service() -> ReportesService:
     Inyecta:
     - ReportesQueries (lectura Mongo)
     """
-    print("\n🧠 [dependencies] get_reportes_service()")
-
     queries = get_reportes_queries()
-
-    service = ReportesService(reportes_queries=queries)
-
-    print("   ✔ ReportesService listo")
-    return service
+    return ReportesService(reportes_queries=queries)
