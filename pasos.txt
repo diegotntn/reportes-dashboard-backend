@@ -1,0 +1,15 @@
+BACKEND
+
+En main.py del backend:
+
+MODE = 0  # LOCAL
+
+uvicorn main:app --reload --port 8000
+http://localhost:8000/api/health
+
+FRONTEND
+
+En api.js del frontend:
+
+const MODE = 0; // LOCAL
+python -m http.server 5173

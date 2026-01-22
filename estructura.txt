@@ -1,0 +1,82 @@
+BACKEND
+│
+├── main.py                         # Arranque API
+│
+├── docs/
+│   ├── arquitectura.md
+│   ├── decisiones_api.md
+│   └── contratos_reportes.md       # 🔑 JSONs esperados por frontend
+│
+├── domain/                          # MODELO CONCEPTUAL (solo lectura)
+│   ├── __init__.py
+│   ├── eventos.py                  # Eventos: devolución, venta, surtido
+│   ├── producto.py                 # Dimensión producto
+│   ├── persona.py                  # Dimensión persona
+│   └── ubicacion.py                # Dimensión pasillo / zona
+│   # ❌ sin validaciones de negocio
+│   # ❌ sin reglas mutables
+│
+├── db/
+│   ├── base.py                     # Interfaces de lectura
+│   ├── factory.py                  # get_db()
+│   │
+│   └── mongo/
+│       ├── client.py               # MongoClientProvider (solo lectura)
+│       │
+│       └── reportes/
+│           ├── queries.py           # Consultas y accesos analíticos
+│           ├── pipelines.py         # Pipelines $match / $group
+│           └── filtros.py           # Filtros Mongo reutilizables
+│
+├── services/
+│   ├── __init__.py
+│   │
+│   └── reportes/
+│       ├── service.py               # Orquestador principal (delgado)
+│       │
+│       ├── data/                    # Acceso y preparación de datos
+│       │   ├── __init__.py
+│       │   ├── queries.py           # Llamadas a ReportesQueries
+│       │   └── dataframe.py         # obtener_dataframe + helpers
+│       │
+│       ├── aggregations/            # Agregaciones puras
+│       │   ├── __init__.py
+│       │   ├── general.py           # agrupa_general
+│       │   ├── zona.py              # agrupa_por_zona
+│       │   ├── pasillo.py           # agrupa_por_pasillo
+│       │   └── tabla.py             # tabla_final
+│       │
+│       ├── normalization/           # Limpieza y normalización
+│       │   ├── __init__.py
+│       │   ├── columnas.py          # Normalizar columnas
+│       │   ├── tipos.py             # Normalizar tipos
+│       │   └── ids.py               # Normalizar IDs
+│       │
+│       ├── temporal/                # Tiempo y periodos
+│       │   ├── __init__.py
+│       │   ├── periodo.py           # map_periodo
+│       │   └── series.py            # día / semana / mes / año
+│       │
+│       ├── personas/                # Dimensión analítica persona
+│       │   ├── __init__.py
+│       │   └── agrupacion.py        # agrupar_por_persona
+│       │
+│       ├── kpis.py                  # Cálculo de KPIs globales
+│       └── filtros.py               # Wrappers de filtros (fecha, etc.)
+│
+├── api/
+│   ├── app.py
+│   │
+│   ├── routes/
+│   │   └── reportes.py              # ❗ ÚNICA RUTA
+│   │
+│   ├── schemas/
+│   │   └── reportes.py              # Response ONLY
+│   │
+│   └── dependencies.py              # Inyección mínima
+│
+├── tests/
+│   └── reportes/
+│
+├── .env
+└── requirements.txt
