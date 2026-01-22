@@ -15,9 +15,6 @@ REGLAS CLAVE:
 def pipeline_devoluciones_detalle(filtros: dict) -> list:
     filtro_fecha = filtros.get("fecha", {})
 
-    print("\n🧩 [pipeline_devoluciones_detalle]")
-    print("➡ Filtro fecha recibido:", filtro_fecha)
-
     return [
         # 1️⃣ Normalizar fecha
         {
@@ -90,9 +87,6 @@ def pipeline_devoluciones_detalle(filtros: dict) -> list:
 def pipeline_devoluciones_resumen(filtros: dict) -> list:
     filtro_fecha = filtros.get("fecha", {})
 
-    print("\n🧩 [pipeline_devoluciones_resumen]")
-    print("➡ Filtro fecha recibido:", filtro_fecha)
-
     return [
         {
             "$addFields": {
@@ -159,9 +153,6 @@ def pipeline_devoluciones_resumen(filtros: dict) -> list:
 # ARTÍCULOS DE UNA DEVOLUCIÓN
 # ─────────────────────────────────────────────
 def pipeline_devolucion_articulos(devolucion_id: str) -> list:
-    print("\n🧩 [pipeline_devolucion_articulos]")
-    print("➡ devolucion_id:", devolucion_id)
-
     return [
         {
             "$match": {
