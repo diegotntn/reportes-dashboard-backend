@@ -1,47 +1,26 @@
 import pandas as pd
 
-from db.mongo.reportes.predicates import (
-    rango_fechas,
-    combinar_filtros,
-)
+from db.mongo.reportes.predicates import (rango_fechas,combinar_filtros,)
 
-from services.reportes.data.loader import (
-    cargar_devoluciones_detalle,
-)
+from services.reportes.data.loader import (cargar_devoluciones_detalle,)
 
-from services.reportes.data.dataframe import (
-    obtener_dataframe,
-)
+from services.reportes.data.dataframe import (obtener_dataframe,)
 
-from services.reportes.normalization.flow import (
-    normalizar_dataframe,
-)
+from services.reportes.normalization.flow import (normalizar_dataframe,)
 
-from services.reportes.kpis import (
-    calcular_kpis_globales,
-)
+from services.reportes.kpis import (calcular_kpis_globales,)
 
-from services.reportes.aggregations import (
-    agrupa_por_zona,
-    agrupa_por_pasillo,
-    tabla_final,
-)
+from services.reportes.aggregations import (agrupa_por_zona, agrupa_por_pasillo, tabla_final,)
 
-from services.reportes.personas import (
-    agrupar_por_persona,
-)
+from services.reportes.personas import (agrupar_por_persona,)
 
-from services.reportes.personas.agrupacion import (
-    agrupar_personas_por_fecha,
-)
+from services.reportes.personas.agrupacion import (agrupar_personas_por_fecha,)
 
-from services.reportes.temporal import (
-    map_periodo,
-)
+from services.reportes.temporal import (map_periodo,)
 
-from services.reportes.temporal.series import (
-    generar_serie,
-)
+from services.reportes.temporal.series import (generar_serie,)
+
+from services.reportes.utils.json import (resultado_vacio,resultado_error)
 
 
 class ReportesService:
@@ -58,7 +37,7 @@ class ReportesService:
 
         desde, hasta = self._normalizar_fechas(desde, hasta)
         if not desde or not hasta or desde > hasta:
-            return self._resultado_error(kpis, "Rango de fechas inválido")
+            return resultado_error(kpis, "Rango de fechas inválido")
 
         filtros = combinar_filtros(
             rango_fechas(desde, hasta)
@@ -70,7 +49,7 @@ class ReportesService:
         )
 
         if raw is None or raw.empty:
-            return self._resultado_vacio(kpis, desde, hasta, agrupar)
+            return resultado_vacio(kpis, desde, hasta, agrupar)
 
         asignaciones = self.reportes_queries.asignaciones_personal()
         personas_map = self.reportes_queries.personas_activas()
@@ -82,7 +61,7 @@ class ReportesService:
         )
 
         if df is None or df.empty:
-            return self._resultado_vacio(kpis, desde, hasta, agrupar)
+            return resultado_vacio(kpis, desde, hasta, agrupar)
 
         df = normalizar_dataframe(df, kpis)
 
@@ -147,34 +126,3 @@ class ReportesService:
         if pd.isna(d) or pd.isna(h):
             return None, None
         return d.date(), h.date()
-
-    def _resultado_vacio(self, kpis, desde, hasta, agrupar):
-        return {
-            "kpis": kpis,
-            "resumen": calcular_kpis_globales(
-                pd.DataFrame(), kpis
-            ),
-            "general": {
-                "periodo": map_periodo(agrupar),
-                "serie": [],
-            },
-            "por_zona": {},
-            "por_pasillo": {},
-            "personas": {},
-            "por_persona": {},
-            "personas_series": {},
-            "tabla": [],
-        }
-
-    def _resultado_error(self, kpis, mensaje):
-        return {
-            "kpis": kpis,
-            "error": mensaje,
-            "general": None,
-            "por_zona": {},
-            "por_pasillo": {},
-            "personas": {},
-            "por_persona": {},
-            "personas_series": {},
-            "tabla": [],
-        }
