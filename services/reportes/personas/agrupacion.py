@@ -3,7 +3,7 @@ from typing import Dict, Any, List
 from datetime import date
 
 from services.reportes.aggregations.tabla import tabla_final
-from services.reportes.personas.utils import normalizar_fecha
+from services.reportes.personas.asignaciones import obtener_asignaciones_activas
 
 
 # ─────────────────────────────
@@ -51,44 +51,16 @@ def agrupar_por_persona(
         return {}
 
     # ─────────────────────────────
-    # Filtrar asignaciones activas
-    # (lógica temporal VIVE AQUÍ)
+    # Resolver asignaciones activas
     # ─────────────────────────────
-    asignaciones_activas: List[Dict[str, str]] = []
+    pasillo_a_persona = obtener_asignaciones_activas(
+        asignaciones=asignaciones,
+        desde=desde,
+        hasta=hasta,
+    )
 
-    for a in asignaciones:
-        pasillo = (a.get("pasillo") or "").strip()
-        persona_id = (a.get("persona_id") or "").strip()
-
-        if not pasillo or not persona_id:
-            continue
-
-        fecha_desde = normalizar_fecha(a.get("fecha_desde"))
-        fecha_hasta = normalizar_fecha(a.get("fecha_hasta"))
-
-        # Si empieza después del rango, no aplica
-        if fecha_desde and fecha_desde > hasta:
-            continue
-
-        # Si terminó antes del rango, no aplica
-        if fecha_hasta and fecha_hasta < desde:
-            continue
-
-        asignaciones_activas.append({
-            "pasillo": pasillo,
-            "persona_id": persona_id,
-        })
-
-    if not asignaciones_activas:
+    if not pasillo_a_persona:
         return {}
-
-    # ─────────────────────────────
-    # Mapa pasillo → persona
-    # ─────────────────────────────
-    pasillo_a_persona: Dict[str, str] = {
-        a["pasillo"]: a["persona_id"]
-        for a in asignaciones_activas
-    }
 
     # ─────────────────────────────
     # Agrupar índices por persona
