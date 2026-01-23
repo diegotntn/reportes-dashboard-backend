@@ -6,7 +6,7 @@ from db.mongo.reportes.filtros import (
 )
 
 # ─── DATA ─────────────────────────────────────────────
-from services.reportes.data.queries import (
+from services.reportes.data.loader import (
     cargar_devoluciones_detalle,
 )
 
