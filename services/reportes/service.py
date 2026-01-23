@@ -1,6 +1,6 @@
 import pandas as pd
 
-from db.mongo.reportes.filtros import (
+from db.mongo.reportes.predicates import (
     rango_fechas,
     combinar_filtros,
 )
