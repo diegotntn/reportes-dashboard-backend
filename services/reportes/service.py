@@ -19,6 +19,11 @@ from services.reportes.normalization.flow import (
     normalizar_dataframe,
 )
 
+# ─── KPIs ─────────────────────────────────────────────
+from services.reportes.kpis import (
+    calcular_kpis_globales,
+)
+
 # ─── AGGREGATIONS ─────────────────────────────────────
 from services.reportes.aggregations import (
     agrupa_por_zona,
@@ -57,6 +62,7 @@ class ReportesService:
     RESPONSABILIDAD:
     - Orquestar queries
     - Delegar normalización a flow
+    - Delegar KPIs globales
     - Construir agregaciones
     - Preparar payload FINAL para frontend
     """
@@ -99,15 +105,11 @@ class ReportesService:
         if df is None or df.empty:
             return self._resultado_vacio(kpis, desde, hasta, agrupar)
 
-        # ✅ NORMALIZACIÓN CENTRALIZADA
+        # ✅ NORMALIZACIÓN
         df = normalizar_dataframe(df, kpis)
 
-        # ─── KPIs globales
-        resumen = {
-            "importe_total": float(df["importe"].sum()) if kpis.get("importe") else 0.0,
-            "piezas_total": int(df["piezas"].sum()) if kpis.get("piezas") else 0,
-            "devoluciones_total": int(df["devoluciones"].sum()) if kpis.get("devoluciones") else 0,
-        }
+        # ✅ KPIs GLOBALes (EXTRAÍDOS)
+        resumen = calcular_kpis_globales(df, kpis)
 
         periodo = map_periodo(agrupar)
 
@@ -181,11 +183,9 @@ class ReportesService:
     def _resultado_vacio(self, kpis, desde, hasta, agrupar):
         return {
             "kpis": kpis,
-            "resumen": {
-                "importe_total": 0.0,
-                "piezas_total": 0,
-                "devoluciones_total": 0,
-            },
+            "resumen": calcular_kpis_globales(
+                pd.DataFrame(), kpis
+            ),
             "general": {
                 "periodo": map_periodo(agrupar),
                 "serie": [],
