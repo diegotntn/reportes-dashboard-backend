@@ -1,7 +1,6 @@
 from datetime import date
 import pandas as pd
 
-
 # ======================================================
 # Helpers internos
 # ======================================================
@@ -46,6 +45,20 @@ def _construir_punto(key: str, label: str, bloque: pd.DataFrame) -> dict:
 
 
 # ======================================================
+# GENERADOR CENTRAL (⬅️ NUEVO)
+# ======================================================
+
+def generar_serie(df: pd.DataFrame, desde: date, hasta: date, periodo: str) -> list[dict]:
+    if periodo == "dia":
+        return serie_por_dia(df, desde, hasta)
+    if periodo == "semana":
+        return serie_por_semana(df, desde, hasta)
+    if periodo == "anio":
+        return serie_por_anio(df, desde, hasta)
+    return serie_por_mes(df, desde, hasta)
+
+
+# ======================================================
 # SERIE POR DÍA
 # ======================================================
 
@@ -64,15 +77,13 @@ def serie_por_dia(df: pd.DataFrame, desde: date, hasta: date) -> list[dict]:
         if bloque.empty:
             salida.append(_punto_vacio(str(d), str(d)))
         else:
-            salida.append(
-                _construir_punto(str(d), str(d), bloque)
-            )
+            salida.append(_construir_punto(str(d), str(d), bloque))
 
     return salida
 
 
 # ======================================================
-# SERIE POR SEMANA (ISO - lunes)
+# SERIE POR SEMANA
 # ======================================================
 
 def serie_por_semana(df: pd.DataFrame, desde: date, hasta: date) -> list[dict]:
@@ -96,15 +107,12 @@ def serie_por_semana(df: pd.DataFrame, desde: date, hasta: date) -> list[dict]:
 
     for s in pd.date_range(inicio, fin, freq="W-MON").date:
         bloque = df[df["semana"] == s]
-
         label = f"Semana {s}"
 
         if bloque.empty:
             salida.append(_punto_vacio(str(s), label))
         else:
-            salida.append(
-                _construir_punto(str(s), label, bloque)
-            )
+            salida.append(_construir_punto(str(s), label, bloque))
 
     return salida
 
@@ -124,16 +132,12 @@ def serie_por_mes(df: pd.DataFrame, desde: date, hasta: date) -> list[dict]:
 
     for m in pd.period_range(desde, hasta, freq="M"):
         bloque = df[df["mes"] == m]
-
         key = str(m)
-        label = str(m)
 
         if bloque.empty:
-            salida.append(_punto_vacio(key, label))
+            salida.append(_punto_vacio(key, key))
         else:
-            salida.append(
-                _construir_punto(key, label, bloque)
-            )
+            salida.append(_construir_punto(key, key, bloque))
 
     return salida
 
@@ -153,15 +157,11 @@ def serie_por_anio(df: pd.DataFrame, desde: date, hasta: date) -> list[dict]:
 
     for a in range(desde.year, hasta.year + 1):
         bloque = df[df["anio"] == a]
-
         key = str(a)
-        label = str(a)
 
         if bloque.empty:
-            salida.append(_punto_vacio(key, label))
+            salida.append(_punto_vacio(key, key))
         else:
-            salida.append(
-                _construir_punto(key, label, bloque)
-            )
+            salida.append(_construir_punto(key, key, bloque))
 
     return salida

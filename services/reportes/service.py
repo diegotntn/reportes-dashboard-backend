@@ -5,7 +5,6 @@ from db.mongo.reportes.predicates import (
     combinar_filtros,
 )
 
-# ─── DATA ─────────────────────────────────────────────
 from services.reportes.data.loader import (
     cargar_devoluciones_detalle,
 )
@@ -14,29 +13,20 @@ from services.reportes.data.dataframe import (
     obtener_dataframe,
 )
 
-# ─── NORMALIZATION FLOW ───────────────────────────────
 from services.reportes.normalization.flow import (
     normalizar_dataframe,
 )
 
-# ─── KPIs ─────────────────────────────────────────────
 from services.reportes.kpis import (
     calcular_kpis_globales,
 )
 
-# ─── AGGREGATIONS ─────────────────────────────────────
 from services.reportes.aggregations import (
     agrupa_por_zona,
     agrupa_por_pasillo,
     tabla_final,
 )
 
-# ─── GENERAL ──────────────────────────────────────────
-from services.reportes.aggregations.general import (
-    agrupa_general,
-)
-
-# ─── PERSONAS ─────────────────────────────────────────
 from services.reportes.personas import (
     agrupar_por_persona,
 )
@@ -45,34 +35,23 @@ from services.reportes.personas.agrupacion import (
     agrupar_personas_por_fecha,
 )
 
-# ─── TEMPORAL ─────────────────────────────────────────
 from services.reportes.temporal import (
     map_periodo,
-    serie_por_dia,
-    serie_por_semana,
-    serie_por_mes,
-    serie_por_anio,
+)
+
+from services.reportes.temporal.series import (
+    generar_serie,
 )
 
 
 class ReportesService:
     """
     Servicio central de reportes (solo lectura).
-
-    RESPONSABILIDAD:
-    - Orquestar queries
-    - Delegar normalización a flow
-    - Delegar KPIs globales
-    - Construir agregaciones
-    - Preparar payload FINAL para frontend
     """
 
     def __init__(self, reportes_queries):
         self.reportes_queries = reportes_queries
 
-    # ─────────────────────────────
-    # API PÚBLICA
-    # ─────────────────────────────
     def generar(self, desde, hasta, agrupar="Mes", kpis=None):
 
         kpis = self._normalizar_kpis(kpis)
@@ -105,22 +84,18 @@ class ReportesService:
         if df is None or df.empty:
             return self._resultado_vacio(kpis, desde, hasta, agrupar)
 
-        # ✅ NORMALIZACIÓN
         df = normalizar_dataframe(df, kpis)
 
-        # ✅ KPIs GLOBALes (EXTRAÍDOS)
         resumen = calcular_kpis_globales(df, kpis)
 
         periodo = map_periodo(agrupar)
 
-        if periodo == "dia":
-            general = serie_por_dia(df, desde, hasta)
-        elif periodo == "semana":
-            general = serie_por_semana(df, desde, hasta)
-        elif periodo == "anio":
-            general = serie_por_anio(df, desde, hasta)
-        else:
-            general = serie_por_mes(df, desde, hasta)
+        general = generar_serie(
+            df,
+            desde,
+            hasta,
+            periodo
+        )
 
         por_persona = agrupar_por_persona(
             self.reportes_queries,
@@ -135,25 +110,18 @@ class ReportesService:
             kpis
         )
 
-        por_zona = agrupa_por_zona(df, kpis)
-        por_pasillo = agrupa_por_pasillo(df, kpis)
-
         return {
             "kpis": kpis,
             "resumen": resumen,
-
             "general": {
                 "periodo": periodo,
                 "serie": general,
             },
-
-            "por_zona": por_zona,
-            "por_pasillo": por_pasillo,
-
+            "por_zona": agrupa_por_zona(df, kpis),
+            "por_pasillo": agrupa_por_pasillo(df, kpis),
             "personas": personas_map,
             "por_persona": por_persona,
             "personas_series": personas_series,
-
             "tabla": tabla_final(df),
         }
 
