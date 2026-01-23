@@ -34,10 +34,10 @@ def get_database() -> MongoClientProvider:
 # ─────────────────────────────────────────
 # QUERIES ANALÍTICAS
 # ─────────────────────────────────────────
-from db.mongo.reportes.queries import ReportesQueries
+from db.mongo.reportes.access import ReportesAccess
 
 
-def get_reportes_queries() -> ReportesQueries:
+def get_reportes_queries() -> ReportesAccess:
     """
     Construye las queries analíticas de reportes.
 
@@ -46,7 +46,7 @@ def get_reportes_queries() -> ReportesQueries:
     - NO se pasa una colección suelta
     """
     provider = get_database()
-    return ReportesQueries(provider)
+    return ReportesAccess(provider)
 
 
 # ─────────────────────────────────────────
