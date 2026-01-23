@@ -1,42 +1,9 @@
 import pandas as pd
-from typing import Dict, Any, Optional, List
-from datetime import date, datetime
+from typing import Dict, Any, List
+from datetime import date
 
 from services.reportes.aggregations.tabla import tabla_final
-
-
-# ─────────────────────────────
-# Utilidades
-# ─────────────────────────────
-def normalizar_fecha(valor) -> Optional[date]:
-    """
-    Convierte valores de fecha provenientes de Mongo a `datetime.date`.
-
-    Acepta:
-    - None
-    - datetime.date
-    - datetime.datetime
-    - str ISO (YYYY-MM-DD o YYYY-MM-DDTHH:MM:SS)
-
-    Retorna:
-    - date o None
-    """
-    if valor is None:
-        return None
-
-    if isinstance(valor, date) and not isinstance(valor, datetime):
-        return valor
-
-    if isinstance(valor, datetime):
-        return valor.date()
-
-    if isinstance(valor, str):
-        try:
-            return datetime.fromisoformat(valor).date()
-        except ValueError:
-            return None
-
-    return None
+from services.reportes.personas.utils import normalizar_fecha
 
 
 # ─────────────────────────────
@@ -166,6 +133,10 @@ def agrupar_por_persona(
 
     return resultado
 
+
+# ─────────────────────────────
+# Series temporales (charts)
+# ─────────────────────────────
 def agrupar_personas_por_fecha(df, kpis):
     """
     Agrupa por PERSONA y FECHA (series temporales).
@@ -209,14 +180,14 @@ def agrupar_personas_por_fecha(df, kpis):
                 "fecha": fecha,
                 "key": fecha.isoformat(),
                 "label": fecha.isoformat(),
-                "kpis": kpis_fecha
+                "kpis": kpis_fecha,
             })
 
         series.sort(key=lambda x: x["fecha"])
 
         resultado[persona_id] = {
             "nombre": nombre,
-            "series": series
+            "series": series,
         }
 
     return resultado
