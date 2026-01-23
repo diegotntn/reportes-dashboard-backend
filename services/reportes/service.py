@@ -14,11 +14,9 @@ from services.reportes.data.dataframe import (
     obtener_dataframe,
 )
 
-# ─── NORMALIZATION ────────────────────────────────────
-from services.reportes.normalization import (
-    normalizar_ids,
-    normalizar_columnas,
-    normalizar_tipos,
+# ─── NORMALIZATION FLOW ───────────────────────────────
+from services.reportes.normalization.flow import (
+    normalizar_dataframe,
 )
 
 # ─── AGGREGATIONS ─────────────────────────────────────
@@ -35,11 +33,11 @@ from services.reportes.aggregations.general import (
 
 # ─── PERSONAS ─────────────────────────────────────────
 from services.reportes.personas import (
-    agrupar_por_persona,          # TABLA / RESUMEN
+    agrupar_por_persona,
 )
 
 from services.reportes.personas.agrupacion import (
-    agrupar_personas_por_fecha,   # 📈 SERIES
+    agrupar_personas_por_fecha,
 )
 
 # ─── TEMPORAL ─────────────────────────────────────────
@@ -58,7 +56,7 @@ class ReportesService:
 
     RESPONSABILIDAD:
     - Orquestar queries
-    - Normalizar datos
+    - Delegar normalización a flow
     - Construir agregaciones
     - Preparar payload FINAL para frontend
     """
@@ -71,20 +69,16 @@ class ReportesService:
     # ─────────────────────────────
     def generar(self, desde, hasta, agrupar="Mes", kpis=None):
 
-        # ─── KPIs
         kpis = self._normalizar_kpis(kpis)
 
-        # ─── Fechas
         desde, hasta = self._normalizar_fechas(desde, hasta)
         if not desde or not hasta or desde > hasta:
             return self._resultado_error(kpis, "Rango de fechas inválido")
 
-        # ─── Filtros Mongo
         filtros = combinar_filtros(
             rango_fechas(desde, hasta)
         )
 
-        # ─── Query base
         raw = cargar_devoluciones_detalle(
             self.reportes_queries,
             filtros
@@ -93,11 +87,9 @@ class ReportesService:
         if raw is None or raw.empty:
             return self._resultado_vacio(kpis, desde, hasta, agrupar)
 
-        # ─── Dimensiones (LECTURA PURA)
         asignaciones = self.reportes_queries.asignaciones_personal()
         personas_map = self.reportes_queries.personas_activas()
 
-        # ─── DataFrame enriquecido
         df = obtener_dataframe(
             raw,
             asignaciones=asignaciones,
@@ -107,16 +99,8 @@ class ReportesService:
         if df is None or df.empty:
             return self._resultado_vacio(kpis, desde, hasta, agrupar)
 
-        # ─── Normalización
-        df = normalizar_ids(df)
-        df = normalizar_columnas(df, kpis)
-        df = normalizar_tipos(df)
-
-        df["devoluciones"] = df.get("devoluciones", 1)
-        df["persona_nombre"] = (
-            df.get("persona_nombre", "Sin asignación")
-              .fillna("Sin asignación")
-        )
+        # ✅ NORMALIZACIÓN CENTRALIZADA
+        df = normalizar_dataframe(df, kpis)
 
         # ─── KPIs globales
         resumen = {
@@ -125,7 +109,6 @@ class ReportesService:
             "devoluciones_total": int(df["devoluciones"].sum()) if kpis.get("devoluciones") else 0,
         }
 
-        # ─── GENERAL (serie temporal)
         periodo = map_periodo(agrupar)
 
         if periodo == "dia":
@@ -137,7 +120,6 @@ class ReportesService:
         else:
             general = serie_por_mes(df, desde, hasta)
 
-        # ─── PERSONAS
         por_persona = agrupar_por_persona(
             self.reportes_queries,
             df,
@@ -151,11 +133,9 @@ class ReportesService:
             kpis
         )
 
-        # ─── OTRAS DIMENSIONES
         por_zona = agrupa_por_zona(df, kpis)
         por_pasillo = agrupa_por_pasillo(df, kpis)
 
-        # ─── RESULTADO FINAL (CONTRATO FRONTEND)
         return {
             "kpis": kpis,
             "resumen": resumen,
@@ -168,9 +148,8 @@ class ReportesService:
             "por_zona": por_zona,
             "por_pasillo": por_pasillo,
 
-            # 🔑 PERSONAS (CLAVE PARA UI)
-            "personas": personas_map,          # 👈 MAPA id → nombre
-            "por_persona": por_persona,        # tablas / resumen
+            "personas": personas_map,
+            "por_persona": por_persona,
             "personas_series": personas_series,
 
             "tabla": tabla_final(df),
